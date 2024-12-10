@@ -5,3 +5,11 @@ session_file = "config/.session.json"
 [base]
 current_site = "backroomswiki.ru"
 
+# Logging settings
+[logging]
+file_path = 'logs/cli.log'
+level = "INFO"
+format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> [<bold>{level.icon}<level>{level}</level></bold>] <magenta>{name}</magenta> - {message}"
+rotation = "1 day"
+enqueue = "True"
+colorize = "True"

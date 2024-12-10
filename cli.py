@@ -3,6 +3,8 @@ from getpass import getpass
 from utls.base_requests import login
 
 
+
+
 def login_cli(args):
     username = input("Enter your username: ")
     password = getpass("Enter your password: ")

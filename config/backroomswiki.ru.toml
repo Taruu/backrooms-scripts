@@ -1,5 +1,8 @@
-[hosts]
-BASE_URL = "https://www.backroomswiki.ru"
+[host]
+base_url = "https://www.backroomswiki.ru"
+login_url = "/-/login"
+css_fonts_url = "/system:fonts"
+woff2_fonts_url = "/system:fonts-base"
 
 [images]
 components = ["component:level-class", "component:image-block", "component:forum-block",

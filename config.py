@@ -10,8 +10,12 @@ values = Dynaconf(
     settings_files=["settings.toml", ".secrets.toml"],
 )
 
-# Current wiki Base url
-BASE_URL = values.get("hosts.BASE_URL")
-# use checks in hostname
-REPLACE_HOSTS_PATTERN_LIST = values("hosts.replace_hosts_pattern_list")
 
+site = values = Dynaconf(
+    envvar_prefix="DYNACONF",
+    settings_files=[f"{values.get('base.current_site')}.toml"]
+)
+
+# Current wiki Base url
+BASE_URL = site.get("host.BASE_URL")
+LOGIN_URL = BASE_URL + site.get("host.login_url")

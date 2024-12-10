@@ -1,6 +1,7 @@
 [host]
 base_url = "https://www.backroomswiki.ru"
 login_url = "/-/login"
+api_articles = "/api/articles/"
 css_fonts_url = "/system:fonts"
 woff2_fonts_url = "/system:fonts-base"
 

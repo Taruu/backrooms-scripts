@@ -1,0 +1,8 @@
+[hosts]
+BASE_URL = "https://www.backroomswiki.ru"
+
+[images]
+components = ["component:level-class", "component:image-block", "component:forum-block",
+    "component:image-block-spoiler", "component:photocard-block-base", "component:hinc",
+    "component:level-card",
+    "image", "=image", "<image", ">image", "f>image", "f<image"]

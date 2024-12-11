@@ -1,4 +1,4 @@
-from utls.base_requests import load_session
+from utls.base_requests import load_authorized_session
 
-session = load_session()
+session = load_authorized_session()
 

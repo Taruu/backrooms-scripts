@@ -3,6 +3,7 @@ base_url = "https://www.backroomswiki.ru"
 login_url = "/-/login"
 files_url = "/local--files/"
 api_articles = "/api/articles/"
+api_files = "/api/files/"
 
 # path pages to store fonts (css) and (woff2) files
 css_fonts_url = "/system:fonts"

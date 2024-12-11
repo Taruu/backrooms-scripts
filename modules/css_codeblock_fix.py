@@ -1,4 +1,12 @@
-from utls.base_requests import load_authorized_session
+import re
 
-session = load_authorized_session()
+from modules.component_name_fix import handle
+from utls.base_requests import Article
+from utls.regex_parser import *
 
+page = Article("theme:amor-incrementum")
+
+handle(page.source_code())
+
+# brackets_items = re.findall(s_bracket_dual_regex, page.source_code())
+# print(brackets_items)

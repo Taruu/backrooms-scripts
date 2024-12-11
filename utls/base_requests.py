@@ -1,13 +1,16 @@
 import json
+import logging
 from urllib.parse import urlparse
 import xxhash
 
+import os
 import magic
 import requests
 from lxml import html
 from setuptools._distutils.command.config import config
 
 import config
+from config import logger
 
 
 def login(username: str, password):
@@ -47,8 +50,12 @@ authorized_session = requests.Session()
 authorized_session.headers.update(
     {"User-Agent": config.values.get('requests.user_agent')}
 )
-with open(config.values.get("requests.session_file"), "r") as file_session:
-    authorized_session.cookies.update({json.loads(file_session.read())})
+
+if os.path.exists(config.values.get("requests.session_file")):
+    with open(config.values.get("requests.session_file"), "r") as file_session:
+        authorized_session.cookies.update(json.loads(file_session.read()))
+else:
+    logger.error(f"session file not exist")
 
 
 class Article:
@@ -60,8 +67,8 @@ class Article:
 
         self.files_list()
 
-    def get_source(self) -> dict:
-        pass
+    def source_code(self) -> str:
+        return self.page_source.get("source")
 
     def files_list(self):
         pass

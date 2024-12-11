@@ -13,12 +13,11 @@ def handle(source_page: str) -> str:
     only_components = [block for block in split_listed if "include" in block[0]]
     only_to_patch = [block for block in only_components if block[1].count(':') > 2]
 
-    list_to_replace = []
     for split_block in only_to_patch:
         old_component_name = split_block[1]
         component_name = old_component_name.split(":")
         component_name.pop(1)
         new_component_name = ":".join(component_name)
         patched_source_page.replace(old_component_name, new_component_name)
-    print(patched_source_page)
+
     return patched_source_page

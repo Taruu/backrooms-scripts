@@ -1,7 +1,7 @@
 import re
 
 from modules.component_name_fix import handle
-from utls.base_requests import Article
+from utls.base_utils import Article
 from utls.regex_parser import *
 
 page = Article("theme:amor-incrementum")

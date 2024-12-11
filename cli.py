@@ -1,7 +1,8 @@
 import argparse
+import sys
 from getpass import getpass
-from utls.base_requests import login
-
+from utls.base_utils import login
+import importlib
 
 def login_cli(args):
     username = input("Enter your username: ")
@@ -11,8 +12,9 @@ def login_cli(args):
 
 
 def command_cli(args):
-    # Implement the patch functionality here
-    print(f"Patching with file: {args.file}")
+    sys.path.append("modules")
+    print(args.patch_names)
+    #module = importlib.import_module(args.patch_name)
 
 
 def main():
@@ -24,8 +26,9 @@ def main():
     login_parser.set_defaults(func=login_cli)
 
     # Command subcommand
-    patch_parser = subparsers.add_parser('command', help='Apply a patch')
-    patch_parser.add_argument('type', type=str, help='type to command')
+    patch_parser = subparsers.add_parser('patch', help='Apply a patch')
+    patch_parser.add_argument("pages_lists_file", type=str, help="File containing pages to patch")
+    patch_parser.add_argument('patch_names', nargs='+', type=str, help='List of patch names to apply')
     patch_parser.set_defaults(func=command_cli)
 
     # Parse the arguments

@@ -7,7 +7,6 @@ import os
 import magic
 import requests
 from lxml import html
-from setuptools._distutils.command.config import config
 
 import config
 from config import logger
@@ -60,15 +59,22 @@ else:
 
 class Article:
     def __init__(self, page_name: str, session=authorized_session):
+
+
         self.session = session
         self.page_name = page_name
 
         self.page_source = self.session.get(f'{config.API_ARTICLES}{self.page_name}').json()
+        if self.page_source.get("error"):
+            raise Exception(self.page_source.get("error"))
 
         self.files_list()
 
     def source_code(self) -> str:
         return self.page_source.get("source")
+
+    def update_source_code(self, comment: str):
+        pass
 
     def files_list(self):
         pass
@@ -228,3 +234,8 @@ class OutsideFIle:
 
     def _webarchive_download(self):
         pass
+
+
+if __name__ == "__main__":
+    test = Article("sandbox:taruu-upload-test1")
+    print(test.source_code())

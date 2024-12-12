@@ -5,8 +5,9 @@ import re
 
 from utls.base_utils import Article
 from utls.regex_parser import s_bracket_dual_regex
+from config import logger
 
-false_import_regex = r"@import\s+url\(\s*[\'\"]?[^\'\")]*local--code[^\'\")]*[\'\"]?\s*\);"
+code_block_import_regex = r"@import\s+url\(\s*[\'\"]?[^\'\")]*local--code[^\'\")]*[\'\"]?\s*\);"
 
 
 def handle(article: Article) -> Article:
@@ -17,6 +18,10 @@ def handle(article: Article) -> Article:
     only_code = [block for block in split_listed if "code" in block[0]]
     only_module = [block for block in split_listed if "module" in block[0]]
 
-    print(only_code, only_module)
+    code_block_import_css = re.findall(code_block_import_regex, article.source_code)
+    if len(code_block_import_css) > 0:
+        if len(code_block_import_css) > 1:
+            logger.error("TO MANY")
+        print(article.page_name, code_block_import_css)
 
     return article

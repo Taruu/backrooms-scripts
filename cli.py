@@ -23,6 +23,9 @@ def command_cli(args):
     modules = [importlib.import_module(module_name) for module_name in args.patch_names]
 
     for link in file.readlines():
+        if not link:
+            continue
+
         url_obj = urlparse(link)
         if f"{url_obj.scheme}://{url_obj.netloc}" != config.BASE_URL:
             logger.error(f"This not current target site! {url_obj.geturl()} not in {config.BASE_URL}")

@@ -1,20 +1,39 @@
 import argparse
 import sys
 from getpass import getpass
-from utls.base_utils import login
+from urllib.parse import urlparse
+
+import config
+from utls.base_utils import login, Article
 import importlib
+from config import logger
+
+sys.path.append("modules")
+
 
 def login_cli(args):
     username = input("Enter your username: ")
     password = getpass("Enter your password: ")
-    print(f"Logging in with username: {username}")
+    logger.info(f"Logging in with username: {username}")
     login(username, password)
 
 
 def command_cli(args):
-    sys.path.append("modules")
-    print(args.patch_names)
-    #module = importlib.import_module(args.patch_name)
+    file = open(args.pages_lists_file, 'r')
+    modules = [importlib.import_module(module_name) for module_name in args.patch_names]
+
+    for link in file.readlines():
+        url_obj = urlparse(link)
+        if f"{url_obj.scheme}://{url_obj.netloc}" != config.BASE_URL:
+            logger.error(f"This not current target site! {url_obj.geturl()} not in {config.BASE_URL}")
+            continue
+        page_name = url_obj.path[1:]
+        logger.info(f"Load {page_name}")
+        article_to_fix = Article(page_name)
+        print(article_to_fix.source_code())
+
+
+#
 
 
 def main():

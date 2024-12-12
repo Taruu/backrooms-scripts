@@ -17,11 +17,10 @@ site = Dynaconf(
 
 # Current wiki Base url
 BASE_URL = site.get("host.BASE_URL")
-
 LOGIN_URL = BASE_URL + site.get("host.login_url")
 FILES_URL = BASE_URL + site.get("host.files_url")
 API_ARTICLES = BASE_URL + site.get("host.api_articles")
-API_FILES = BASE_URL = site.get("host.api_files")
+API_FILES = BASE_URL + site.get("host.api_files")
 
 PROXY = {
     "http": values.get("proxy.http"),

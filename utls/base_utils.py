@@ -59,8 +59,6 @@ else:
 
 class Article:
     def __init__(self, page_name: str, session=authorized_session):
-
-
         self.session = session
         self.page_name = page_name
 

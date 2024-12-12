@@ -28,12 +28,21 @@ def command_cli(args):
             logger.error(f"This not current target site! {url_obj.geturl()} not in {config.BASE_URL}")
             continue
         page_name = url_obj.path[1:]
+
         logger.info(f"Load {page_name}")
-        article_to_fix = Article(page_name)
-        print(article_to_fix.source_code())
+        article = Article(page_name)
 
+        for module in modules:
+            logger.info(f"Applide patch {module.__name__} for page {article.page_name}")
+            article = module.handle(article)
 
-#
+        comment = f"Automated edit. Applied next patchs:\n" \
+                  f" {','.join([str(module_name) for module_name in args.patch_names])[1:]}"
+        logger.info(f"Upload patch for page {article.page_name}")
+        status = article.update_source_code(comment)
+        if not status:
+            logger.error(f"Not update page {article.page_name}")
+            break
 
 
 def main():

@@ -57,30 +57,9 @@ else:
     logger.error(f"session file not exist")
 
 
-class Article:
-    def __init__(self, page_name: str, session=authorized_session):
-        self.session = session
-        self.page_name = page_name
-
-        self.page_source = self.session.get(f'{config.API_ARTICLES}{self.page_name}').json()
-        if self.page_source.get("error"):
-            raise Exception(self.page_source.get("error"))
-
-        self.files_list()
-
-    def source_code(self) -> str:
-        return self.page_source.get("source")
-
-    def update_source_code(self, comment: str):
-        pass
-
-    def files_list(self):
-        pass
-
-
 class ArticleFile:
     def __init__(self, page_name: str, filename: str,
-                 file_id=None, file_bytes=None, mime_type=None,
+                 file_id=0, file_bytes=None, mime_type=None,
                  session=authorized_session):
         """
         file_bytes = None : if we create new image for page we forse setup bytes
@@ -88,7 +67,7 @@ class ArticleFile:
 
         self.is_file_new = False
 
-        self.file_id: int = file_id
+        self.file_id: int = int(file_id)
         self.session = session
         self.page_name: str = page_name
         self.filename: str = filename
@@ -106,14 +85,19 @@ class ArticleFile:
             hash_obj.update(file_bytes)
             self._file_hash = hash_obj.hexdigest()
 
-    def _get_id_by_name(self):
+    def __hash__(self):
+        return self.file_id
+
+    def get_id_by_name(self):
         if self.file_id:
             return self.file_id
+
         file_json = requests.get(f"{config.API_ARTICLES}{self.page_name}/files").json()
         for file_info in file_json.get("files"):
             if self.filename == file_info.get("name"):
                 self.file_id = file_info.get("id")
                 return self.file_id
+        self.file_id = None
         return None
 
     @property
@@ -142,11 +126,13 @@ class ArticleFile:
             raise Exception(text)
         else:
             self.is_file_new = False
+            self.file_id = None
+            self.get_id_by_name()
             return True
 
     def remove(self):
         """Remove file"""
-        if self._get_id_by_name() is None:
+        if self.get_id_by_name() is None:
             # File already not exist?
             return True
 
@@ -196,6 +182,59 @@ class ArticleFile:
     @file_bytes.setter
     def file_bytes(self, new_file_bytes: bytes):
         self._file_bytes = new_file_bytes
+
+
+class Article:
+    def __init__(self, page_name: str, session=authorized_session):
+        self.session = session
+        self.page_name = page_name
+
+        self._file_list = {}
+        self._page_source = self.session.get(f'{config.API_ARTICLES}{self.page_name}').json()
+
+        if self._page_source.get("error"):
+            raise Exception(self._page_source.get("error"))
+
+        self._get_file_list()
+
+    @property
+    def source_code(self) -> str:
+        return self._page_source.get("source")
+
+    @source_code.setter
+    def source_code(self, new_source_code):
+        self._page_source['source'] = new_source_code
+
+    def update_source_code(self, comment: str):
+        dict_new_source = {
+            "title": self._page_source.get("title"),
+            "pageId": self._page_source.get("pageId"),
+            "comment": comment,
+            "source": self._page_source.get("source")
+        }
+
+        result = self.session.put(f"{config.API_ARTICLES}{self.page_name}", json=dict_new_source)
+        result_json = result.json()
+        return result_json.get("status") == "ok"
+
+    def _get_file_list(self):
+        file_json = requests.get(f"{config.API_ARTICLES}{self.page_name}/files").json()
+        for file_info in file_json.get("files"):
+            article_file = ArticleFile(self.page_name, file_info.get("name"),
+                                       mime_type=file_info.get("mimeType"), file_id=file_info.get("id"))
+            self._file_list.update({int(file_info.get("id")): article_file})
+
+    def remove_file(self, article_file: ArticleFile):
+        self._file_list.pop(article_file.file_id)
+        article_file.remove()
+
+    def add_file(self, article_file: ArticleFile):
+        article_file.upload()
+        self._file_list.update({article_file.file_id: article_file})
+
+    @property
+    def files_list(self):
+        return self._file_list
 
 
 class OutsideFIle:

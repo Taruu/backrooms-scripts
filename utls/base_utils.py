@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from urllib.parse import urlparse
 import xxhash
 
@@ -10,6 +11,10 @@ from lxml import html
 
 import config
 from config import logger
+
+import wayback
+
+wayback_client = wayback.WaybackClient()
 
 
 def login(username: str, password):
@@ -246,31 +251,59 @@ class OutsideFIle:
         self.file_hash: str = None
         self.mime_type: str = None
 
-        self.session = normal_session
+        self.session = session
         self.proxy_session = proxy_session
 
-    def check_url(self, session):
-        status_code = session.head(self.file_url).status_code
+    def _check_url(self, session, url=None):
+        if url:
+            status_code = session.head(self.file_url).status_code
+        else:
+            status_code = session.head(url).status_code
         # if file already exist
         if status_code == 200:
             return True
         return False
 
     def download(self):
-        pass
+        content = self._direct_download()
+        if content is None:
+            content = self._proxy_download()
 
-    def _direct_download(self):
-        if not self.check_url(self.session):
+        self.mime_type: str = magic.from_buffer(self.file_bytes, mime=True)
+
+        hash_obj = xxhash.xxh64()
+        hash_obj.update(self.file_bytes)
+
+        self.file_hash = hash_obj.hexdigest()
+
+    def _direct_download(self, url=None) -> [None | bytes]:
+        if not self._check_url(self.session, url=url):
             return None
 
-        pass
+        if url:
+            return self.session.get(url).content
 
-    def _proxy_download(self):
-        if not self.check_url(self.proxy_session):
+        return self.session.get(self.file_url).content
+
+    def _proxy_download(self) -> [None | bytes]:
+        if not self._check_url(self.proxy_session):
             return None
+        return self.proxy_session.get(self.file_url).content
 
     def _webarchive_download(self):
-        pass
+        # https://i.postimg.cc/TP3FFVTz/classpsi.png
+
+        for record in wayback_client.search(self.file_url):
+            try:
+                memento = wayback_client.get_memento(record)
+            except Exception:
+                continue
+            pass
+
+            time.sleep(2)
+            for key, value in memento.links.items():
+                archive_url = value.get('url')
+                content = self._direct_download(url=archive_url)
 
 
 if __name__ == "__main__":

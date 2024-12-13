@@ -51,7 +51,7 @@ image_component_list = ["component:level-class", "component:image-block", "compo
 # [[[*http://ru-backrooms-wiki.wikidot.com/level-0|desc]]]
 thiple_regex = r"\[\[\[[^\[\]\n]*\]\]\]"
 
-wayback_client = wayback.WaybackClient()
+
 
 
 class Link:

@@ -7,4 +7,5 @@ lxml==5.3.0
 python-magic==0.4.27
 requests==2.32.3
 urllib3==2.2.3
+wayback==0.4.5
 xxhash==3.5.0

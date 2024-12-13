@@ -42,7 +42,8 @@ def command_cli(args):
         comment = f"Automated edit. Applied next patchs:\n" \
                   f" {','.join([str(module_name) for module_name in args.patch_names])[1:]}"
         logger.info(f"Upload patch for page {article.page_name}")
-        status = article.update_source_code(comment)
+        status = True
+        # status = article.update_source_code(comment)
         if not status:
             logger.error(f"Not update page {article.page_name}")
             break

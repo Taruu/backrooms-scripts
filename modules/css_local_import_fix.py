@@ -16,10 +16,16 @@ Result:
 import re
 
 from utls.base_utils import Article
-from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex
+from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex, get_module_css, css_url_regex
 from config import logger
 
 
 def handle(article: Article) -> Article:
+    patched_source_page = article.source_code
 
-    pass
+    module_css = get_module_css(article.source_code)
+
+    list_all_local_files_import = re.findall(css_url_regex, module_css)
+    print(list_all_local_files_import)
+
+    return article

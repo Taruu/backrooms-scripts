@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 import xxhash
 
 import os
@@ -268,17 +268,21 @@ class OutsideFIle:
     def _check_url(self, session, url=None):
         if url:
             status_code = session.head(self.file_url).status_code
+            print(status_code)
         else:
             status_code = session.head(url).status_code
         # if file already exist
-        if status_code == 200:
+        if status_code in [200, 301]:
             return True
         return False
 
     def download(self):
+
         content = self._direct_download()
         if content is None:
             content = self._proxy_download()
+        elif content is None:
+            content = self._webarchive_download()
 
         self.mime_type: str = magic.from_buffer(self.file_bytes, mime=True)
 
@@ -292,6 +296,7 @@ class OutsideFIle:
             return None
 
         if url:
+            print("get url", url)
             return self.session.get(url).content
 
         return self.session.get(self.file_url).content
@@ -309,14 +314,19 @@ class OutsideFIle:
                 memento = wayback_client.get_memento(record)
             except Exception:
                 continue
-            pass
-
             time.sleep(2)
+
             for key, value in memento.links.items():
                 archive_url = value.get('url')
-                content = self._direct_download(url=archive_url)
+                print(archive_url, unquote(archive_url))
+
+                archive_url = unquote(archive_url)
+
+                return self._direct_download(url=archive_url)
 
 
 if __name__ == "__main__":
-    test = Article("sandbox:taruu-upload-test1")
-    print(test.source_code())
+    test = OutsideFIle("http://backrooms-wiki.wikidot.com/local--files/component:theme/sidebar.css")
+
+    print(test.download())
+    print(test.mime_type)

@@ -15,7 +15,7 @@ s_bracket_dual_regex = r"\[\[(?:.|\n)*?\]\]"
 # [[[*http://ru-backrooms-wiki.wikidot.com/level-0|desc]]]
 s_bracket_triple_regex = r"\[\[\[[^\[\]\n]*\]\]\]"
 
-css_url_regex = r"url\(\s*([\"\']?)https?:\/\/[^)\"\']+\1\s*\)"
+css_url_regex = r"url\(\s*[\'\"]?(https?:\/\/[^)\'\"]+?)[\'\"]?\s*\)"
 
 css_import_regex = r"@import\s+url\(\s*[\'\"]?(https?:\/\/[^\'\")]+)[\'\"]?\s*\);"
 

@@ -17,7 +17,7 @@ import wayback
 wayback_client = wayback.WaybackClient()
 
 
-def login(username: str, password):
+def login_auth(username: str, password):
     """Write session into file"""
     session = requests.Session()
 
@@ -41,6 +41,12 @@ def login(username: str, password):
         file_session.write(json.dumps(session.cookies.get_dict()))
 
 
+def token_auth(bot_token: str):
+    # self._session.headers.add("Authorization", f"Bearer {self.token}")
+    with open(config.values.get("requests.session_file"), "w") as file_session:
+        file_session.write(json.dumps({"Authorization": f"Bearer {bot_token}"}))
+
+
 # Normal Session
 normal_session = requests.Session()
 
@@ -51,13 +57,17 @@ proxy_session.proxies = config.PROXY
 # Session with auth for target site
 authorized_session = requests.Session()
 
-authorized_session.headers.update(
-    {"User-Agent": config.values.get('requests.user_agent')}
-)
-
 if os.path.exists(config.values.get("requests.session_file")):
     with open(config.values.get("requests.session_file"), "r") as file_session:
-        authorized_session.cookies.update(json.loads(file_session.read()))
+        session_values = json.loads(file_session.read())
+
+        if session_values.get("csrftoken"):
+            authorized_session.cookies.update(session_values)
+            authorized_session.headers.update(
+                {"User-Agent": config.values.get('requests.user_agent')}
+            )
+        else:
+            authorized_session.headers.update(session_values)
 else:
     logger.error(f"session file not exist")
 
@@ -220,7 +230,8 @@ class Article:
 
         result = self.session.put(f"{config.API_ARTICLES}{self.page_name}", json=dict_new_source)
         result_json = result.json()
-        return result_json.get("status") == "ok"
+        print(result_json.get("status"))
+        return result_json.get("pageId") == self.page_name
 
     def _get_file_list(self):
         file_json = requests.get(f"{config.API_ARTICLES}{self.page_name}/files").json()

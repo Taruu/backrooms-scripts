@@ -4,7 +4,7 @@ from getpass import getpass
 from urllib.parse import urlparse
 
 import config
-from utls.base_utils import login, Article
+from utls.base_utils import login_auth, Article, token_auth
 import importlib
 from config import logger
 
@@ -15,7 +15,13 @@ def login_cli(args):
     username = input("Enter your username: ")
     password = getpass("Enter your password: ")
     logger.info(f"Logging in with username: {username}")
-    login(username, password)
+    login_auth(username, password)
+
+
+def token_cli(args):
+    token_value = getpass("Enter your token: ")
+    logger.info(f"Logging in with token")
+    token_auth(token_value)
 
 
 def command_cli(args):
@@ -40,13 +46,15 @@ def command_cli(args):
             article = module.handle(article)
 
         comment = f"Automated edit. Applied next patchs:\n" \
-                  f" {','.join([str(module_name) for module_name in args.patch_names])[1:]}"
-        logger.info(f"Upload patch for page {article.page_name}")
-        status = True
-        # status = article.update_source_code(comment)
+                  f" {','.join([str(module_name) for module_name in args.patch_names])}"
+        logger.info(f"Start Upload patch for page {article.page_name}")
+        # status = True
+        status = article.update_source_code(comment)
         if not status:
             logger.error(f"Not update page {article.page_name}")
             break
+        else:
+            logger.success(f"Upload patch for page {article.page_name}")
 
 
 def main():
@@ -56,6 +64,10 @@ def main():
     # Login subcommand
     login_parser = subparsers.add_parser('login', help='Authenticate a user')
     login_parser.set_defaults(func=login_cli)
+
+    # Token subcommand
+    login_parser = subparsers.add_parser('token', help='Authenticate a bot')
+    login_parser.set_defaults(func=token_cli)
 
     # Command subcommand
     patch_parser = subparsers.add_parser('patch', help='Apply a patch')

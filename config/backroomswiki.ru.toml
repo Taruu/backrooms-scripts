@@ -14,3 +14,7 @@ components = ["component:level-class", "component:image-block", "component:forum
     "component:image-block-spoiler", "component:photocard-block-base", "component:hinc",
     "component:level-card",
     "image", "=image", "<image", ">image", "f>image", "f<image"]
+
+[replace]
+blacklist_in = ["backrooms-wiki.ru", "wdfiles.com", ""]
+

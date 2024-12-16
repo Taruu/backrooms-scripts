@@ -4,10 +4,8 @@ Fix component theme CSS codeblock use
 import re
 
 from utls.base_utils import Article
-from utls.regex_parser import s_bracket_dual_regex
+from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex
 from config import logger
-
-code_block_import_regex = r"@import\s+url\(\s*[\'\"]?[^\'\")]*local--code[^\'\")]*[\'\"]?\s*\);"
 
 
 def handle(article: Article) -> Article:

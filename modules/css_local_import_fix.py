@@ -21,4 +21,5 @@ from config import logger
 
 
 def handle(article: Article) -> Article:
+
     pass

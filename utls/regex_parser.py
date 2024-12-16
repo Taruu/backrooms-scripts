@@ -83,11 +83,12 @@ def get_code_blocks(source: str, code_type: PEARTextHighlighter = None) -> None 
     end_block: str = None
 
     for block in list_all_duals:
-        start_prepare = source.lower().replace("[", "").replace("]", "").split()
+        start_prepare = block.lower().replace("[", "").replace("]", "").split()
 
         if ("code" in start_prepare) and not start_block:
             if code_type and (len(start_prepare) > 1):
-                if code_type in start_prepare[1].split("="):
+                print(code_type.value, start_prepare[1].split("="))
+                if (code_type.value in start_prepare[1]) and ("type=" in start_prepare[1]):
                     start_block = block
                     continue
                 else:

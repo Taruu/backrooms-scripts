@@ -22,11 +22,11 @@ FILES_URL = BASE_URL + site.get("host.files_url")
 API_ARTICLES = BASE_URL + site.get("host.api_articles")
 API_FILES = BASE_URL + site.get("host.api_files")
 
+
 PROXY = {
     "http": values.get("proxy.http"),
     "https": values.get("proxy.https"),
 }
-
 
 # Remove the existing logger
 logger.remove()

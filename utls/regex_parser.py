@@ -112,17 +112,17 @@ def get_code_blocks(source: str, code_type: PEARTextHighlighter = None) -> None 
     return code_blocks
 
 
-text = """Some text before
-[[Module css]]
-body {
-  background-color: #f3f3f3;
-}
-
-tesadasdas
-[[/module]]
-Some text after."""
-
-print()
-
-module_css_text = get_module_css(text)
-print(text.replace(module_css_text, ""))
+# text = """Some text before
+# [[Module css]]
+# body {
+#   background-color: #f3f3f3;
+# }
+#
+# tesadasdas
+# [[/module]]
+# Some text after."""
+#
+# print()
+#
+# module_css_text = get_module_css(text)
+# print(text.replace(module_css_text, ""))

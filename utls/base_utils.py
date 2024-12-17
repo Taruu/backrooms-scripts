@@ -52,7 +52,8 @@ normal_session = requests.Session()
 
 # Session with proxy
 proxy_session = requests.Session()
-proxy_session.proxies = config.PROXY
+print(config.PROXY)
+proxy_session.proxies.update(config.PROXY)
 
 # Session with auth for target site
 authorized_session = requests.Session()
@@ -79,15 +80,16 @@ class ArticleFile:
         """
         file_bytes = None : if we create new image for page we forse setup bytes
         """
+        self.session = session
 
         self.is_file_new = False
 
         self.file_id: int = int(file_id)
-        self.session = session
         self.page_name: str = page_name
         self.filename: str = filename
 
         self._file_bytes: bytes = file_bytes
+
         self.mime_type: str = mime_type
 
         self._file_hash: str = None
@@ -116,20 +118,24 @@ class ArticleFile:
         return None
 
     @property
-    def file_url(self):
+    def absolute_file_url(self):
         return f"{config.FILES_URL}{self.page_name}/{self.filename}"
+
+    @property
+    def relative_file_url(self):
+        return f"{urlparse(config.FILES_URL).path}{self.page_name}/{self.filename}"
 
     def upload(self, overwrite=False, check=False):
         """
         overwrite = False : status about overwrite file
         """
-        if overwrite and not self.is_file_new:
+        if overwrite and self.is_file_new:
             self.remove()
 
         headers = {
             "X-File-Name": self.filename,
             "Content-Type": self.mime_type,
-            "Content-Length": str(len(self.file_bytes))
+            "Content-Length": str(len(self._file_bytes))
         }
 
         result = self.session.post(f"{config.API_ARTICLES}{self.page_name}/files", data=self._file_bytes,
@@ -184,10 +190,10 @@ class ArticleFile:
 
     @property
     def file_bytes(self) -> bytes:
-        if self._file_bytes is bytes:
+        if not self._file_bytes:
             return self._file_bytes
 
-        self._file_bytes = self.session.get(self.file_url).content
+        self._file_bytes = self.session.get(self.absolute_file_url).content
         hash_obj = xxhash.xxh64()
         hash_obj.update(self._file_bytes)
         self._file_hash = hash_obj.hexdigest()
@@ -230,7 +236,6 @@ class Article:
 
         result = self.session.put(f"{config.API_ARTICLES}{self.page_name}", json=dict_new_source)
         result_json = result.json()
-        print(result_json.get("status"))
         return result_json.get("pageId") == self.page_name
 
     def _get_file_list(self):
@@ -244,8 +249,8 @@ class Article:
         self._file_list.pop(article_file.file_id)
         article_file.remove()
 
-    def add_file(self, article_file: ArticleFile):
-        article_file.upload()
+    def add_file(self, article_file: ArticleFile, overwrite=False):
+        article_file.upload(overwrite=overwrite)
         self._file_list.update({article_file.file_id: article_file})
 
     @property
@@ -266,23 +271,23 @@ class OutsideFIle:
         self.proxy_session = proxy_session
 
     def _check_url(self, session, url=None):
-        if url:
-            status_code = session.head(self.file_url).status_code
-            print(status_code)
-        else:
-            status_code = session.head(url).status_code
-        # if file already exist
-        if status_code in [200, 301]:
+
+        if not url:
+            url = self.file_url
+        result = requests.get(url, stream=True, verify=True)
+        if 200 <= result.status_code < 400:
             return True
         return False
 
     def download(self):
 
         content = self._direct_download()
-        if content is None:
+        if not content:
             content = self._proxy_download()
-        elif content is None:
+        if not content:
             content = self._webarchive_download()
+
+        self.file_bytes = content
 
         self.mime_type: str = magic.from_buffer(self.file_bytes, mime=True)
 
@@ -296,15 +301,19 @@ class OutsideFIle:
             return None
 
         if url:
-            print("get url", url)
-            return self.session.get(url).content
+            result = self.session.get(url)
+        else:
+            result = self.session.get(self.file_url)
 
-        return self.session.get(self.file_url).content
+        return result.content
 
     def _proxy_download(self) -> [None | bytes]:
         if not self._check_url(self.proxy_session):
             return None
-        return self.proxy_session.get(self.file_url).content
+
+        result = self.proxy_session.get(self.file_url)
+
+        return result.content
 
     def _webarchive_download(self):
         # https://i.postimg.cc/TP3FFVTz/classpsi.png
@@ -314,11 +323,11 @@ class OutsideFIle:
                 memento = wayback_client.get_memento(record)
             except Exception:
                 continue
+
             time.sleep(2)
 
             for key, value in memento.links.items():
                 archive_url = value.get('url')
-                print(archive_url, unquote(archive_url))
 
                 archive_url = unquote(archive_url)
 

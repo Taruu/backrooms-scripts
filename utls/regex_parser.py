@@ -26,32 +26,42 @@ module_css_regex = r'\[\[module css\]\](.*?)\[\[/module\]\]'
 
 # TODO add this parser variant:
 # http://handbook.wikidot.com/en:modules-all
-def get_module_css(source: str) -> str | None:
-    """get [[module css]]"""
+def get_module_css(source: str) -> list[str] | None:
+    """get list [[module css]]"""
     list_all_duals = re.findall(s_bracket_dual_regex, source)
 
     start_block: str = None
     end_block: str = None
 
+    list_patterns = []
+
     for block in list_all_duals:
-        # i hate this world
-        start_prepare = source.lower().replace("[", "").replace("]", "").split()
-        if ("module" in start_prepare) and not start_block:
+        if ("module" in block.lower()) and ("css" in block.lower()) and not start_block:
             start_block = block
         elif start_block and ("/module" in block.lower()):
             end_block = block
-    if not start_block and not end_block:
+        elif start_block and end_block:
+            pattern = re.escape(start_block) + r'(.*?)' + re.escape(end_block)
+            list_patterns.append(pattern)
+
+    if not list_patterns:
         return None
 
-    pattern = re.escape(start_block) + r'(.*?)' + re.escape(end_block)
-    matches = re.finditer(pattern, source, re.DOTALL)
-    module_css = None
+    list_matches = []
 
-    for match in matches:
-        module_css = source[match.start():match.end()]
-        break  # can exist only one codeblock
+    for pattern in list_patterns:
+        matches = re.finditer(pattern, source, re.DOTALL)
+        for match in matches:
+            list_matches.append(match)
 
-    return module_css
+    css_block = []
+
+    for match in list_matches:
+        # can exist multiple blocks BUT fucking block flOooating
+        # i know this can be fixed by regex but uhhhhh idk
+        css_block.append(source[match.start():match.end()])
+
+    return list(dict.fromkeys(css_block))
 
 
 class PEARTextHighlighter(Enum):
@@ -77,6 +87,7 @@ class PEARTextHighlighter(Enum):
 
 def get_code_blocks(source: str, code_type: PEARTextHighlighter = None) -> None | list[str]:
     """get [[code type=]]"""
+    # TODO REWRITE TO LIST
     list_all_duals = re.findall(s_bracket_dual_regex, source)
 
     start_block: str = None
@@ -87,7 +98,6 @@ def get_code_blocks(source: str, code_type: PEARTextHighlighter = None) -> None 
 
         if ("code" in start_prepare) and not start_block:
             if code_type and (len(start_prepare) > 1):
-                print(code_type.value, start_prepare[1].split("="))
                 if (code_type.value in start_prepare[1]) and ("type=" in start_prepare[1]):
                     start_block = block
                     continue
@@ -110,7 +120,6 @@ def get_code_blocks(source: str, code_type: PEARTextHighlighter = None) -> None 
         code_blocks.append(source[match.start():match.end()])
 
     return code_blocks
-
 
 # text = """Some text before
 # [[Module css]]

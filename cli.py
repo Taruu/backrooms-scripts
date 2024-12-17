@@ -41,6 +41,8 @@ def command_cli(args):
         logger.info(f"Load {page_name}")
         article = Article(page_name)
 
+        before_patchs = article.source_code
+
         for module in modules:
             logger.info(f"Applide patch {module.__name__} for page {article.page_name}")
             article = module.handle(article)
@@ -49,12 +51,16 @@ def command_cli(args):
                   f" {','.join([str(module_name) for module_name in args.patch_names])}"
         logger.info(f"Start Upload patch for page {article.page_name}")
         # status = True
-        status = article.update_source_code(comment)
-        if not status:
-            logger.error(f"Not update page {article.page_name}")
-            break
+        if before_patchs != article.source_code:
+            status = article.update_source_code(comment)
+
+            if not status:
+                logger.error(f"Not update page {article.page_name}")
+                break
+            else:
+                logger.success(f"Upload patch for page {article.page_name}")
         else:
-            logger.success(f"Upload patch for page {article.page_name}")
+            logger.warning(f"Nothing to change for page {article.page_name}")
 
 
 def main():

@@ -17,6 +17,8 @@ def handle(article: Article) -> Article:
     only_module = [block for block in split_listed if "module" in block[0]]
 
     code_block_import_css = re.findall(code_block_import_regex, article.source_code)
+    if not code_block_import_css:
+        return article
 
     if len(code_block_import_css) > 0:
         if len(code_block_import_css) > 1:
@@ -26,6 +28,8 @@ def handle(article: Article) -> Article:
     codeblock_css = get_code_blocks(article.source_code, PEARTextHighlighter.CSS)
     if codeblock_css:
         codeblock_css = codeblock_css[0]
+    else:
+        return article
 
     blocks_to_remove = re.findall(s_bracket_dual_regex, codeblock_css)
     only_css = codeblock_css

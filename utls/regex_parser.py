@@ -30,6 +30,21 @@ def get_module_css(source: str) -> list[str] | None:
     """get list [[module css]]"""
     list_all_duals = re.findall(s_bracket_dual_regex, source)
 
+    # [[div class="code"]] cleaner
+    # start_div_codeblock = None
+    # list_all_duals = []
+    # for i, dual_block in enumerate(list_all_duals_before_clear):
+    #     if ("div" in dual_block) and ("class" in dual_block) and ("code" in dual_block) and not start_div_codeblock:
+    #         start_div_codeblock = i + 1
+    #         continue
+    #     elif start_div_codeblock and ("/div" in dual_block):
+    #         start_div_codeblock = None
+    #         continue
+    #     elif start_div_codeblock:
+    #         continue
+    #     else:
+    #         list_all_duals.append(dual_block)
+
     start_block: str = None
     end_block: str = None
 
@@ -40,9 +55,11 @@ def get_module_css(source: str) -> list[str] | None:
             start_block = block
         elif start_block and ("/module" in block.lower()):
             end_block = block
-        elif start_block and end_block:
+        if start_block and end_block:
             pattern = re.escape(start_block) + r'(.*?)' + re.escape(end_block)
             list_patterns.append(pattern)
+            start_block = None
+            end_block = None
 
     if not list_patterns:
         return None
@@ -54,14 +71,18 @@ def get_module_css(source: str) -> list[str] | None:
         for match in matches:
             list_matches.append(match)
 
-    css_block = []
+    css_blocks = []
 
     for match in list_matches:
         # can exist multiple blocks BUT fucking block flOooating
         # i know this can be fixed by regex but uhhhhh idk
-        css_block.append(source[match.start():match.end()])
+        value = source[match.start():match.end()]
+        if "@@" in value:
+            # Some bad people make this: @@[[module CSS]]@@
+            continue
+        css_blocks.append(value)
 
-    return list(dict.fromkeys(css_block))
+    return list(dict.fromkeys(css_blocks))
 
 
 class PEARTextHighlighter(Enum):
@@ -87,40 +108,44 @@ class PEARTextHighlighter(Enum):
 
 def get_code_blocks(source: str, code_type: PEARTextHighlighter = None) -> None | list[str]:
     """get [[code type=]]"""
-    # TODO REWRITE TO LIST
+    """get list [[module css]]"""
     list_all_duals = re.findall(s_bracket_dual_regex, source)
 
     start_block: str = None
     end_block: str = None
 
-    for block in list_all_duals:
-        start_prepare = block.lower().replace("[", "").replace("]", "").split()
+    list_patterns = []
 
-        if ("code" in start_prepare) and not start_block:
-            if code_type and (len(start_prepare) > 1):
-                if (code_type.value in start_prepare[1]) and ("type=" in start_prepare[1]):
-                    start_block = block
-                    continue
-                else:
-                    continue
+    for block in list_all_duals:
+        if ("code" in block.lower()) and (code_type.value in block.lower()) and (
+                "type" in block.lower()) and not start_block:
             start_block = block
         elif start_block and ("/code" in block.lower()):
             end_block = block
+        if start_block and end_block:
+            pattern = re.escape(start_block) + r'(.*?)' + re.escape(end_block)
+            list_patterns.append(pattern)
+            start_block = None
+            end_block = None
 
-    if not start_block and not end_block:
+    if not list_patterns:
         return None
 
-    pattern = re.escape(start_block) + r'(.*?)' + re.escape(end_block)
-    matches = re.finditer(pattern, source, re.DOTALL)
-    code_blocks = []
+    list_matches = []
 
-    for match in matches:
-        # can exist multiple blocks BUT fucking block flOooating
-        # i know this can be fixed by regex but uhhhhh idk
-        code_blocks.append(source[match.start():match.end()])
+    for pattern in list_patterns:
+        matches = re.finditer(pattern, source, re.DOTALL)
+        for match in matches:
+            list_matches.append(match)
 
-    return code_blocks
+    css_modules = []
 
+    for match in list_matches:
+        css_modules.append(source[match.start():match.end()])
+
+    return list(dict.fromkeys(css_modules))
+
+# TODO make universial parser of block start and end
 # text = """Some text before
 # [[Module css]]
 # body {

@@ -1,5 +1,6 @@
 import argparse
 import sys
+import time
 from getpass import getpass
 from urllib.parse import urlparse
 
@@ -29,6 +30,7 @@ def command_cli(args):
     modules = [importlib.import_module(module_name) for module_name in args.patch_names]
 
     for link in file.readlines():
+        time.sleep(1)
         if not link:
             continue
 
@@ -41,17 +43,22 @@ def command_cli(args):
         logger.info(f"Load {page_name}")
         article = Article(page_name)
 
-        before_patchs = article.source_code
+        before_patches = article.source_code
+        applied_patches = []
 
         for module in modules:
-            logger.info(f"Applide patch {module.__name__} for page {article.page_name}")
+            before_patch = article.source_code
+            logger.info(f"Applied patch {module.__name__} for page {article.page_name}")
             article = module.handle(article)
 
-        comment = f"Automated edit. Applied next patchs:\n" \
-                  f" {','.join([str(module_name) for module_name in args.patch_names])}"
+            if before_patch != article.source_code:
+                applied_patches.append(module.__name__)
+
+        comment = f"Automated edit. Applied next patches:\n" \
+                  f" {','.join([str(module_name) for module_name in applied_patches])}"
         logger.info(f"Start Upload patch for page {article.page_name}")
         # status = True
-        if before_patchs != article.source_code:
+        if before_patches != article.source_code:
             status = article.update_source_code(comment)
 
             if not status:

@@ -13,6 +13,7 @@ def handle(article: Article) -> Article:
     blocks_list = re.findall(s_bracket_dual_regex, article.source_code)
     split_listed = [block.split() for block in blocks_list]
     only_components = [block for block in split_listed if "include" in block[0]]
+    only_components = [block for block in only_components if len(block) > 1]
     only_to_patch = [block for block in only_components if block[1].count(':') > 2]
 
     for split_block in only_to_patch:

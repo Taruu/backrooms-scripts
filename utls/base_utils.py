@@ -52,7 +52,6 @@ normal_session = requests.Session()
 
 # Session with proxy
 proxy_session = requests.Session()
-print(config.PROXY)
 proxy_session.proxies.update(config.PROXY)
 
 # Session with auth for target site

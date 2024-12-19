@@ -22,6 +22,11 @@ FILES_URL = BASE_URL + site.get("host.files_url")
 API_ARTICLES = BASE_URL + site.get("host.api_articles")
 API_FILES = BASE_URL + site.get("host.api_files")
 
+if site.get("users.wd_file"):
+    with open(site.get("users.wd_file", 'r')) as file:
+        WD_USERS: list = list(dict.fromkeys([line for line in file.readlines()]))
+else:
+    WD_USERS: list = None
 
 PROXY = {
     "http": values.get("proxy.http"),

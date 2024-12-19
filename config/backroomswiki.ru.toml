@@ -5,6 +5,7 @@ files_url = "/local--files/"
 api_articles = "/api/articles/"
 api_files = "/api/files/"
 
+
 # path pages to store fonts (css) and (woff2) files
 css_fonts_url = "/system:fonts"
 woff2_fonts_url = "/system:fonts-base"
@@ -12,9 +13,11 @@ woff2_fonts_url = "/system:fonts-base"
 [images]
 components = ["component:level-class", "component:image-block", "component:forum-block",
     "component:image-block-spoiler", "component:photocard-block-base", "component:hinc",
-    "component:level-card",
+    "component:level-card", "component:image-block-spoiler", "component:level-card",
     "image", "=image", "<image", ">image", "f>image", "f<image"]
 
 [replace]
-blacklist_in = ["backrooms-wiki.ru", "wdfiles.com", ""]
+blacklist_in = ["backrooms-wiki.ru", "wdfiles.com", "ru-backrooms-wiki"]
 
+[users]
+wd_file = "wd_users_file.txt"

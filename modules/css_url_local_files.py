@@ -25,7 +25,16 @@ from urllib.parse import unquote, urlparse
 def handle(article: Article) -> Article:
     patched_source_page = article.source_code
 
-    module_css = get_module_css(article.source_code)
+    modules_css = get_module_css(article.source_code)
+    if not modules_css:
+        logger.warning(f"Article {article.page_name} not has any css module")
+        return article
+    elif len(modules_css) > 1:
+        logger.error(f"To many module CSS please use `css_module_multiple` before this patch")
+        logger.warning(f"Skip current patch for {article.page_name}")
+        return article
+
+    module_css = modules_css[0]
 
     list_all_local_files_import = [link for link in re.findall(css_url_regex, module_css) if
                                    "local--files" in link]

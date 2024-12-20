@@ -1,10 +1,14 @@
+"""
+Download image content to local--files of page
+"""
+
 import mimetypes
 import re
 
 from utls.base_utils import Article, ArticleFile, OutsideFIle
 from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex, get_module_css, css_url_regex
 from config import logger
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urlparse, quote_plus
 
 
 def handle(article: Article) -> Article:
@@ -22,17 +26,18 @@ def handle(article: Article) -> Article:
     module_css = modules_css[0]
     patched_module_css = module_css
 
-    list_all_local_files_import = [link for link in re.findall(css_url_regex, module_css) if
-                                   "local--files" not in link]
+    list_all_local_files_import = [link for link in re.findall(css_url_regex, module_css) if "local--files" in link]
 
     for link_str in list_all_local_files_import:
         file_obj = OutsideFIle(link_str)
+        file_obj.download()
+
         if "image" in file_obj.mime_type:
             filename = f"{article.page_name}-{file_obj.file_hash}{mimetypes.guess_extension(file_obj.mime_type)}"
             file_to_upload = ArticleFile(article.page_name,
                                          filename, file_bytes=file_obj.file_bytes, mime_type=file_obj.mime_type)
             article.add_file(file_to_upload)
-            patched_module_css = patched_module_css.replace(link_str, file_to_upload.relative_file_url)
+            patched_module_css = patched_module_css.replace(link_str, quote_plus(file_to_upload.relative_file_url))
 
     patched_source_page = patched_source_page.replace(module_css, patched_module_css)
     article.source_code = patched_source_page

@@ -1,5 +1,6 @@
 import json
 import logging
+import mimetypes
 import time
 from urllib.parse import urlparse, unquote
 import xxhash
@@ -23,7 +24,8 @@ def login_auth(username: str, password):
 
     headers = {
         "User-Agent": config.values.get('requests.user_agent'),
-        "Referer": config.LOGIN_URL
+        "Referer": config.LOGIN_URL,
+        "Accept - Language": "ru - RU, ru; q = 0.8, en - US; q = 0.5, en;q = 0.3"
     }
     response = session.get(config.LOGIN_URL)
 
@@ -85,6 +87,9 @@ class ArticleFile:
 
         self.file_id: int = int(file_id)
         self.page_name: str = page_name
+        if "/" in page_name:
+            raise Exception("page_name cant has '/' symbol")
+
         self.filename: str = filename
 
         self._file_bytes: bytes = file_bytes
@@ -95,7 +100,8 @@ class ArticleFile:
 
         if file_bytes:
             self.is_file_new = True
-            self.mime_type: str = magic.from_buffer(file_bytes, mime=True)
+            if not mime_type:
+                self.mime_type: str = magic.from_buffer(file_bytes, mime=True)
 
             hash_obj = xxhash.xxh64()
             hash_obj.update(file_bytes)
@@ -141,6 +147,8 @@ class ArticleFile:
                                    headers=headers)
 
         if result.status_code not in [200, 409]:
+            print(result.content)
+            print(result.status_code)
             text = f"Fail to upload image: {self.page_name}/{self.filename}"
             config.logger.error(text)
             raise Exception(text)
@@ -244,6 +252,11 @@ class Article:
                                        mime_type=file_info.get("mimeType"), file_id=file_info.get("id"))
             self._file_list.update({int(file_info.get("id")): article_file})
 
+    def file_list(self):
+        if not self._file_list:
+            self._get_file_list()
+        return self._file_list
+
     def remove_file(self, article_file: ArticleFile):
         self._file_list.pop(article_file.file_id)
         article_file.remove()
@@ -303,7 +316,7 @@ class OutsideFIle:
             result = self.session.get(url)
         else:
             result = self.session.get(self.file_url)
-
+        self.headers = result.headers
         return result.content
 
     def _proxy_download(self) -> [None | bytes]:
@@ -311,6 +324,7 @@ class OutsideFIle:
             return None
 
         result = self.proxy_session.get(self.file_url)
+        self.headers = result.headers
 
         return result.content
 

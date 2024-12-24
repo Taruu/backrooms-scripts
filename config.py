@@ -33,6 +33,7 @@ PROXY = {
     "https": values.get("proxy.https"),
 }
 
+
 # Remove the existing logger
 logger.remove()
 # Add a new logger with the given settings

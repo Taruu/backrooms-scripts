@@ -18,7 +18,11 @@ components = ["component:level-class", "component:image-block", "component:forum
     "image", "=image", "<image", ">image", "f>image", "f<image"]
 
 [replace]
-blacklist_in = ["backrooms-wiki.ru", "wdfiles.com", "ru-backrooms-wiki"]
+in = ["backrooms-wiki.ru", "wdfiles.com", "ru-backrooms-wiki", "backroomswiki.ru"]
+
+[patch]
+"backrooms-wiki.ru" = "https://www.backroomswiki.ru"
+"en.backrooms-wiki.ru" = "http://backrooms-wiki.wikidot.com"
 
 [users]
 wd_file = ""

@@ -270,7 +270,7 @@ class Article:
         return self._file_list
 
 
-class OutsideFIle:
+class OutsideFile:
     def __init__(self, file_url: str, session=normal_session, proxy_session=proxy_session):
         self.file_url = file_url
 
@@ -281,6 +281,10 @@ class OutsideFIle:
 
         self.session = session
         self.proxy_session = proxy_session
+
+    def guess_type(self):
+        if self.mime_type:
+            return mimetypes.guess_extension(self.mime_type)
 
     def _check_url(self, session, url=None):
 
@@ -348,7 +352,7 @@ class OutsideFIle:
 
 
 if __name__ == "__main__":
-    test = OutsideFIle("http://backrooms-wiki.wikidot.com/local--files/component:theme/sidebar.css")
+    test = OutsideFile("http://backrooms-wiki.wikidot.com/local--files/component:theme/sidebar.css")
 
     print(test.download())
     print(test.mime_type)

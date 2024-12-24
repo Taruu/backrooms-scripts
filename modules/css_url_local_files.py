@@ -16,7 +16,7 @@ Result:
 """
 import re
 
-from utls.base_utils import Article, ArticleFile, OutsideFIle
+from utls.base_utils import Article, ArticleFile, OutsideFile
 from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex, get_module_css, css_url_regex
 from config import logger
 from urllib.parse import unquote, urlparse
@@ -58,7 +58,7 @@ def handle(article: Article) -> Article:
 
         if not article_target:
             # if this page not exist
-            file_obj = OutsideFIle(file_url=link_str)
+            file_obj = OutsideFile(file_url=link_str)
             file_obj.download()
             article_file = ArticleFile(article.page_name, filename, file_bytes=file_obj.file_bytes,
                                        mime_type=file_obj.mime_type)
@@ -75,7 +75,7 @@ def handle(article: Article) -> Article:
 
         if not exist_article_file:
             # if file not exist load local
-            file_obj = OutsideFIle(file_url=link_str)
+            file_obj = OutsideFile(file_url=link_str)
             file_obj.download()
             exist_article_file = ArticleFile(article.page_name, filename, file_bytes=file_obj.file_bytes,
                                              mime_type=file_obj.mime_type)

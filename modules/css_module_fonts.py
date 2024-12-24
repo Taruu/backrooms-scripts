@@ -19,7 +19,7 @@ import mimetypes
 import re
 
 import config
-from utls.base_utils import Article, ArticleFile, OutsideFIle
+from utls.base_utils import Article, ArticleFile, OutsideFile
 from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex, get_module_css, css_url_regex
 from config import logger
 from urllib.parse import unquote, urlparse, quote
@@ -70,7 +70,7 @@ def handle(article: Article) -> Article:
 
     for link_str in list_all_url:
 
-        file_obj = OutsideFIle(link_str)
+        file_obj = OutsideFile(link_str)
         file_obj.download()
         if not is_css_font_file(file_obj.file_bytes.decode()):
             continue
@@ -78,7 +78,7 @@ def handle(article: Article) -> Article:
         css_file = file_obj
         font_css = css_file.file_bytes.decode()
 
-        list_all_font_url = [OutsideFIle(link) for link in re.findall(css_url_regex, font_css)]
+        list_all_font_url = [OutsideFile(link) for link in re.findall(css_url_regex, font_css)]
 
         link_obj = urlparse(link_str)
 

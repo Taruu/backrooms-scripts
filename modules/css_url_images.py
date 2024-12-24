@@ -5,7 +5,7 @@ Download image content to local--files of page
 import mimetypes
 import re
 
-from utls.base_utils import Article, ArticleFile, OutsideFIle
+from utls.base_utils import Article, ArticleFile, OutsideFile
 from utls.regex_parser import s_bracket_dual_regex, code_block_import_regex, get_module_css, css_url_regex
 from config import logger
 from urllib.parse import unquote, urlparse, quote_plus
@@ -29,7 +29,7 @@ def handle(article: Article) -> Article:
     list_all_local_files_import = [link for link in re.findall(css_url_regex, module_css) if "local--files" in link]
 
     for link_str in list_all_local_files_import:
-        file_obj = OutsideFIle(link_str)
+        file_obj = OutsideFile(link_str)
         file_obj.download()
 
         if "image" in file_obj.mime_type:

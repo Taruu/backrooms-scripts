@@ -51,10 +51,13 @@ def token_auth(bot_token: str):
 
 # Normal Session
 normal_session = requests.Session()
+normal_session.headers.update({"User-Agent": config.values.get("requests.user_agent")})
 
 # Session with proxy
 proxy_session = requests.Session()
+
 proxy_session.proxies.update(config.PROXY)
+proxy_session.headers.update({"User-Agent": config.values.get("requests.user_agent")})
 
 # Session with auth for target site
 authorized_session = requests.Session()
@@ -287,7 +290,7 @@ class OutsideFile:
             return mimetypes.guess_extension(self.mime_type)
 
     def _check_url(self, session, url=None):
-
+        print(session, url)
         if not url:
             url = self.file_url
         result = requests.get(url, stream=True, verify=True)
@@ -300,15 +303,22 @@ class OutsideFile:
         content = None
 
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
+            print(self.file_url, downloader)
             if not content:
                 content = downloader()
 
-            self.mime_type: str = magic.from_buffer(self.file_bytes, mime=True)
-            if force_type and (force_type in self.mime_type):
-                content = None
+            if content:
+                self.mime_type: str = magic.from_buffer(content, mime=True)
+                if (str(force_type) in str(self.mime_type)) and force_type and self.mime_type:
+                    break
+                elif force_type and self.mime_type:
+                    content = None
+                else:
+                    break
 
         if not content:
             logger.error(f"Cant download image {self.file_url} force_type = {force_type}")
+            return None
 
         self.file_bytes = content
 
@@ -320,11 +330,15 @@ class OutsideFile:
     def _direct_download(self, url=None) -> [None | bytes]:
         if not self._check_url(self.session, url=url):
             return None
+        print(self.session.proxies, url)
+        try:
+            if url:
+                result = self.session.get(url)
+            else:
+                result = self.session.get(self.file_url)
+        except Exception:
+            return None
 
-        if url:
-            result = self.session.get(url)
-        else:
-            result = self.session.get(self.file_url)
         self.headers = result.headers
         return result.content
 
@@ -334,7 +348,7 @@ class OutsideFile:
 
         result = self.proxy_session.get(self.file_url)
         self.headers = result.headers
-
+        print(result)
         return result.content
 
     def _webarchive_download(self):

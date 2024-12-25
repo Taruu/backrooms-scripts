@@ -2,6 +2,7 @@
 Fix url links
 """
 import re
+import time
 from math import atan2
 from urllib.parse import urlparse
 from venv import logger
@@ -36,9 +37,10 @@ def handle(article: Article) -> Article:
         image_url_obj = urlparse(image_url)
 
         file_obj = OutsideFile(image_url)
-        file_obj.download()
+        file_obj.download(force_type="image")
+        time.sleep(1)
 
-        if "image" not in file_obj.mime_type:
+        if file_obj.mime_type and ("image" not in file_obj.mime_type):
             logger.error(f"Image on page {article.page_name}, by url {image_url} not image? Abort image")
             continue
 
@@ -50,8 +52,12 @@ def handle(article: Article) -> Article:
             temp_split = image_url_obj.path.split('/')
             page_name_of_file = temp_split[1]
             filename_to_check = temp_split[-1]
-            article_check = Article(page_name_of_file)
 
-
+            try:
+                article_check = Article(page_name_of_file)
+            except Exception:
+                article_check = None
+            if article_check:
+                print(article_check.file_list())
 
     return article

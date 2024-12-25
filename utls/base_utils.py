@@ -150,8 +150,6 @@ class ArticleFile:
                                    headers=headers)
 
         if result.status_code not in [200, 409]:
-            print(result.content)
-            print(result.status_code)
             text = f"Fail to upload image: {self.page_name}/{self.filename}"
             config.logger.error(text)
             raise Exception(text)
@@ -255,7 +253,7 @@ class Article:
                                        mime_type=file_info.get("mimeType"), file_id=file_info.get("id"))
             self._file_list.update({int(file_info.get("id")): article_file})
 
-    def file_list(self):
+    def file_list(self) -> dict[int : ArticleFile]:
         if not self._file_list:
             self._get_file_list()
         return self._file_list
@@ -290,7 +288,6 @@ class OutsideFile:
             return mimetypes.guess_extension(self.mime_type)
 
     def _check_url(self, session, url=None):
-        print(session, url)
         if not url:
             url = self.file_url
         result = requests.get(url, stream=True, verify=True)
@@ -299,21 +296,21 @@ class OutsideFile:
         return False
 
     def download(self, force_type: str = None):
-
         content = None
 
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
-            print(self.file_url, downloader)
+            time.sleep(0.1)
+            print("download", self.file_url)
             if not content:
                 content = downloader()
 
             if content:
                 self.mime_type: str = magic.from_buffer(content, mime=True)
-                if (str(force_type) in str(self.mime_type)) and force_type and self.mime_type:
-                    break
-                elif force_type and self.mime_type:
+                print(self.file_url, str(force_type), str(self.mime_type))
+                if not (str(force_type) in str(self.mime_type)) and force_type and self.mime_type:
                     content = None
-                else:
+
+                if content:
                     break
 
         if not content:
@@ -330,7 +327,6 @@ class OutsideFile:
     def _direct_download(self, url=None) -> [None | bytes]:
         if not self._check_url(self.session, url=url):
             return None
-        print(self.session.proxies, url)
         try:
             if url:
                 result = self.session.get(url)
@@ -348,26 +344,25 @@ class OutsideFile:
 
         result = self.proxy_session.get(self.file_url)
         self.headers = result.headers
-        print(result)
+
         return result.content
 
-    def _webarchive_download(self):
+    def check_download(self):
+        pass
+
+    def _webarchive_download(self, force_type=None):
         # https://i.postimg.cc/TP3FFVTz/classpsi.png
 
-        for record in wayback_client.search(self.file_url):
-            try:
-                memento = wayback_client.get_memento(record)
-            except Exception:
-                continue
+        for record in wayback_client.search(str(self.file_url)):
+            print(self.file_url, record.raw_url)
+            result = self._direct_download(url=record.raw_url)
+            mime_type: str = magic.from_buffer(result, mime=True)
+            if (str(force_type) in str(mime_type)) and result and force_type:
+                return result
 
-            time.sleep(2)
-
-            for key, value in memento.links.items():
-                archive_url = value.get('url')
-
-                archive_url = unquote(archive_url)
-
-                return self._direct_download(url=archive_url)
+            if not force_type and result:
+                return result
+        return None
 
 
 if __name__ == "__main__":

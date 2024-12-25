@@ -295,17 +295,22 @@ class OutsideFile:
             return True
         return False
 
-    def download(self):
+    def download(self, force_type: str = None):
 
-        content = self._direct_download()
+        content = None
+
+        for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
+            if not content:
+                content = downloader()
+
+            self.mime_type: str = magic.from_buffer(self.file_bytes, mime=True)
+            if force_type and (force_type in self.mime_type):
+                content = None
+
         if not content:
-            content = self._proxy_download()
-        if not content:
-            content = self._webarchive_download()
+            logger.error(f"Cant download image {self.file_url} force_type = {force_type}")
 
         self.file_bytes = content
-
-        self.mime_type: str = magic.from_buffer(self.file_bytes, mime=True)
 
         hash_obj = xxhash.xxh64()
         hash_obj.update(self.file_bytes)

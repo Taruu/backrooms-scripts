@@ -38,14 +38,20 @@ def handle(article: Article) -> Article:
         file_obj = OutsideFile(image_url)
         file_obj.download()
 
+        if "image" not in file_obj.mime_type:
+            logger.error(f"Image on page {article.page_name}, by url {image_url} not image? Abort image")
+            continue
+
         if not file_obj.file_bytes:
             logger.error(f"Image {image_url} in block {item} on page {article.page_name} not exist")
+            continue
 
         if "local--files" in image_url:
             temp_split = image_url_obj.path.split('/')
             page_name_of_file = temp_split[1]
             filename_to_check = temp_split[-1]
             article_check = Article(page_name_of_file)
+
 
 
     return article

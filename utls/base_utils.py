@@ -2,6 +2,7 @@ import json
 import logging
 import mimetypes
 import time
+from asyncio import timeout
 from urllib.parse import urlparse, unquote
 import xxhash
 
@@ -200,8 +201,14 @@ class ArticleFile:
     def file_bytes(self) -> bytes:
         if not self._file_bytes:
             return self._file_bytes
+        result = self.session.get(self.absolute_file_url)
 
-        self._file_bytes = self.session.get(self.absolute_file_url).content
+        if result.status_code == 429:
+            logger.warning(f"To fast file requests! Calm down on file {self.filename} {self.page_name}")
+            time.sleep(5)
+            return self.file_bytes
+
+        self._file_bytes = result.content
         hash_obj = xxhash.xxh64()
         hash_obj.update(self._file_bytes)
         self._file_hash = hash_obj.hexdigest()
@@ -253,7 +260,7 @@ class Article:
                                        mime_type=file_info.get("mimeType"), file_id=file_info.get("id"))
             self._file_list.update({int(file_info.get("id")): article_file})
 
-    def file_list(self) -> dict[int : ArticleFile]:
+    def file_list(self) -> dict[int: ArticleFile]:
         if not self._file_list:
             self._get_file_list()
         return self._file_list
@@ -300,13 +307,11 @@ class OutsideFile:
 
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
             time.sleep(0.1)
-            print("download", self.file_url)
             if not content:
                 content = downloader()
 
             if content:
                 self.mime_type: str = magic.from_buffer(content, mime=True)
-                print(self.file_url, str(force_type), str(self.mime_type))
                 if not (str(force_type) in str(self.mime_type)) and force_type and self.mime_type:
                     content = None
 
@@ -331,7 +336,7 @@ class OutsideFile:
             if url:
                 result = self.session.get(url)
             else:
-                result = self.session.get(self.file_url)
+                result = self.session.get(self.file_url, timeout=3)
         except Exception:
             return None
 
@@ -353,15 +358,20 @@ class OutsideFile:
     def _webarchive_download(self, force_type=None):
         # https://i.postimg.cc/TP3FFVTz/classpsi.png
 
-        for record in wayback_client.search(str(self.file_url)):
-            print(self.file_url, record.raw_url)
-            result = self._direct_download(url=record.raw_url)
-            mime_type: str = magic.from_buffer(result, mime=True)
-            if (str(force_type) in str(mime_type)) and result and force_type:
-                return result
+        time.sleep(5)  # To many request webarchive not liked
 
-            if not force_type and result:
-                return result
+        for record in wayback_client.search(str(self.file_url)):
+            time.sleep(2)  # To fast download webarchive not liked
+            result = self.session.get(record.raw_url, timeout=3)
+            self.headers = result.headers
+            if not result.content:
+                continue
+            mime_type: str = magic.from_buffer(result.content, mime=True)
+            if force_type and (force_type in mime_type):
+                return result.content
+            elif not force_type and result.content:
+                return result.content
+
         return None
 
 

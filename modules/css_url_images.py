@@ -30,7 +30,7 @@ def handle(article: Article) -> Article:
 
     for link_str in list_all_local_files_import:
         file_obj = OutsideFile(link_str)
-        file_obj.download()
+        file_obj.download(force_type="image")
 
         if "image" in file_obj.mime_type:
             filename = f"{article.page_name}-{file_obj.file_hash}{mimetypes.guess_extension(file_obj.mime_type)}"

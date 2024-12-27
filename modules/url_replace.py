@@ -14,7 +14,7 @@ replace_blacklist_in = site.get("replace.in")
 base_url_obj = urlparse(BASE_URL)
 
 
-def link_hande(source_link: str):
+def link_handle(source_link: str):
     link_text = source_link.strip('[]')
 
     if "|" in link_text:
@@ -68,8 +68,7 @@ def handle(article: Article) -> Article:
                                  ("http" in item) and ("component" not in item)]
 
     for source_link in brackets_items:
-        new_link = link_hande(source_link)
-        print(source_link, new_link)
+        new_link = link_handle(source_link)
         if not new_link:
             continue
         patched_source_page = patched_source_page.replace(source_link, new_link)

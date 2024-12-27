@@ -1,5 +1,9 @@
 """
 Fix component theme CSS codeblock use
+
+[[module CSS]]
+
+
 """
 import re
 

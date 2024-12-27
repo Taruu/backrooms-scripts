@@ -12,7 +12,18 @@ This replace
 @import url("http://backrooms-wiki.wdfiles.com/local--files/component%3Atheme/bhl-archived.css");
 @import url("http://backrooms-wiki.wikidot.com/local--files/component:theme/sidebar.css");
 
-https://www.backroomswiki.ru/theme:cbs-purple-riot
+
+To this:
+
+@import url('/local--files/system:fonts/css2_family=Old+Standard+TT&display=swap.css');
+@import url('/local--files/system:fonts/css2_family=Lora&display=swap.css');
+@import url('/local--files/system:fonts/css2_family=Forum&display=swap.css');
+@import url('/local--files/system:fonts/css2_family=Caveat&display=swap.css');
+
+@import url("/local--files/component:theme/normalize-archived.css");
+@import url("/local--files/component:theme/bhl-archived.css");
+@import url("/local--files/component:theme/sidebar.css");
+
 """
 
 import mimetypes
@@ -72,7 +83,16 @@ def handle(article: Article) -> Article:
 
         file_obj = OutsideFile(link_str)
         file_obj.download()
+        print("fonts", link_str)
+
+        if not file_obj.file_bytes or not file_obj.mime_type:
+            continue
+
+        if "text" not in file_obj.mime_type:
+            continue
+
         if not is_css_font_file(file_obj.file_bytes.decode()):
+            logger.warning(f"File on url {link_str} is not font-css only")
             continue
 
         css_file = file_obj

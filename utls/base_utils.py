@@ -304,11 +304,14 @@ class OutsideFile:
 
     def download(self, force_type: str = None):
         content = None
-
+        print(self.file_url)
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
             time.sleep(0.1)
             if not content:
-                content = downloader()
+                try:
+                    content = downloader()
+                except Exception:
+                    content = None
 
             if content:
                 self.mime_type: str = magic.from_buffer(content, mime=True)
@@ -332,11 +335,12 @@ class OutsideFile:
     def _direct_download(self, url=None) -> [None | bytes]:
         if not self._check_url(self.session, url=url):
             return None
+
         try:
             if url:
-                result = self.session.get(url)
+                result = self.session.get(url, timeout=3, allow_redirects=True)
             else:
-                result = self.session.get(self.file_url, timeout=3)
+                result = self.session.get(self.file_url, timeout=3, allow_redirects=True)
         except Exception:
             return None
 
@@ -347,7 +351,7 @@ class OutsideFile:
         if not self._check_url(self.proxy_session):
             return None
 
-        result = self.proxy_session.get(self.file_url)
+        result = self.proxy_session.get(self.file_url, timeout=3, allow_redirects=True)
         self.headers = result.headers
 
         return result.content

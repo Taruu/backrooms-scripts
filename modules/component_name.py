@@ -1,5 +1,8 @@
 """
 Fix component name
+
+:backrooms-wiki-cn:component:interwiki-style -> :component:interwiki-style
+
 """
 import re
 

@@ -60,6 +60,10 @@ def handle(article: Article) -> Article:
             # if this page not exist
             file_obj = OutsideFile(file_url=link_str)
             file_obj.download()
+
+            if not file_obj.file_bytes:
+                continue
+
             article_file = ArticleFile(article.page_name, filename, file_bytes=file_obj.file_bytes,
                                        mime_type=file_obj.mime_type)
             article.add_file(article_file, overwrite=True)

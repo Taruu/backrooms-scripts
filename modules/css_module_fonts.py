@@ -36,6 +36,7 @@ from config import logger
 from urllib.parse import unquote, urlparse, quote
 
 font_content_regex = r"^\s*@font-face\s*\{[\s\S]*?\}\s*(\/\*[\s\S]*?\*\/)?\s*$|^\s*$|\/\*[\s\S]*?\*\/\n"
+css_comments_regex = r"\/\*[^*]*\*+([^\/*][^*]*\*+)*\/"
 
 font_page_css_a = Article(config.site.get("host.css_fonts_url"))
 font_page_data_a = Article(config.site.get("host.woff2_fonts_url"))
@@ -50,8 +51,10 @@ def is_css_font_file(source: str):
     """check source is there only @font-face and comments"""
     to_check = source
     matches = re.finditer(font_content_regex, source, re.MULTILINE)
-    for block in list(matches):
-        to_check = to_check.replace(block.string, "")
+    for block in matches:
+        # print(block)
+        block.group()
+    to_check = to_check.replace(block.string, "")
 
     to_check = to_check.strip()
 
@@ -89,6 +92,7 @@ def handle(article: Article) -> Article:
 
         if "text" not in file_obj.mime_type:
             continue
+        print(f"test {file_obj.file_url}", is_css_font_file(file_obj.file_bytes.decode()))
         if not is_css_font_file(file_obj.file_bytes.decode()):
             logger.warning(f"File on url {link_str} is not font-css only")
             continue

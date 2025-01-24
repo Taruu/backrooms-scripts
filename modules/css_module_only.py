@@ -22,5 +22,5 @@ def handle(article: Article) -> Article:
         logger.error(f"TO MANY CSS BLOCKS {article.page_name}")
         return article
     list_css_modules = get_module_css(article.source_code)
-    # article.source_code = list_css_modules[0]
+    article.source_code = list_css_modules[0]
     return article

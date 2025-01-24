@@ -51,10 +51,11 @@ def is_css_font_file(source: str):
     to_check = source
     matches = re.finditer(font_content_regex, source, re.MULTILINE)
 
-    for block in matches:
+    for block in list(matches):
         to_check = to_check.replace(block.string, "")
 
     to_check = to_check.strip()
+
     if to_check:
         return False
     return True
@@ -83,14 +84,13 @@ def handle(article: Article) -> Article:
 
         file_obj = OutsideFile(link_str)
         file_obj.download()
-        print("fonts", link_str)
 
         if not file_obj.file_bytes or not file_obj.mime_type:
             continue
 
         if "text" not in file_obj.mime_type:
             continue
-
+        print("is css font file check", file_obj.file_url)
         if not is_css_font_file(file_obj.file_bytes.decode()):
             logger.warning(f"File on url {link_str} is not font-css only")
             continue
@@ -125,5 +125,5 @@ def handle(article: Article) -> Article:
         patched_module_css = patched_module_css.replace(link_str, css_file_local.relative_file_url)
 
     patched_source_page = patched_source_page.replace(module_css, patched_module_css)
-    article.source_code = patched_source_page
+    # article.source_code = patched_source_page
     return article

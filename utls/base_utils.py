@@ -304,7 +304,6 @@ class OutsideFile:
 
     def download(self, force_type: str = None):
         content = None
-        print(self.file_url)
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
             time.sleep(0.1)
             if not content:

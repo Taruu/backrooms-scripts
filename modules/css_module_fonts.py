@@ -50,7 +50,6 @@ def is_css_font_file(source: str):
     """check source is there only @font-face and comments"""
     to_check = source
     matches = re.finditer(font_content_regex, source, re.MULTILINE)
-
     for block in list(matches):
         to_check = to_check.replace(block.string, "")
 
@@ -90,7 +89,6 @@ def handle(article: Article) -> Article:
 
         if "text" not in file_obj.mime_type:
             continue
-        print("is css font file check", file_obj.file_url)
         if not is_css_font_file(file_obj.file_bytes.decode()):
             logger.warning(f"File on url {link_str} is not font-css only")
             continue
@@ -125,5 +123,5 @@ def handle(article: Article) -> Article:
         patched_module_css = patched_module_css.replace(link_str, css_file_local.relative_file_url)
 
     patched_source_page = patched_source_page.replace(module_css, patched_module_css)
-    # article.source_code = patched_source_page
+    article.source_code = patched_source_page
     return article

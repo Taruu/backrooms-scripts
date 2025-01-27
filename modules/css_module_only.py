@@ -1,7 +1,7 @@
 """
 Fix themes code
 
-Save only component:interwiki-style and module CSS for theme
+Save module CSS for theme
 
 """
 from utls.base_utils import Article

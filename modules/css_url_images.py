@@ -39,7 +39,7 @@ def handle(article: Article) -> Article:
             file_to_upload = ArticleFile(article.page_name,
                                          filename, file_bytes=file_obj.file_bytes, mime_type=file_obj.mime_type)
             article.add_file(file_to_upload)
-            patched_module_css = patched_module_css.replace(link_str, quote_plus(file_to_upload.relative_file_url))
+            patched_module_css = patched_module_css.replace(link_str, file_to_upload.relative_file_url)
 
     patched_source_page = patched_source_page.replace(module_css, patched_module_css)
     article.source_code = patched_source_page

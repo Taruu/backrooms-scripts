@@ -52,9 +52,7 @@ def is_css_font_file(source: str):
     to_check = source
     matches = re.finditer(font_content_regex, source, re.MULTILINE)
     for block in matches:
-        # print(block)
-        block.group()
-    to_check = to_check.replace(block.string, "")
+        to_check = to_check.replace(block.string, "")
 
     to_check = to_check.strip()
 

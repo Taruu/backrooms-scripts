@@ -306,7 +306,9 @@ class OutsideFile:
 
     def download(self, force_type: str = None):
         content = None
-        for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
+        for downloader in [self._direct_download, self._proxy_download, self._webarchive_download,
+                           self._proxy_duckduckgo]:
+            logger.info(f"Try {downloader.__name__} for image {self.file_url}")
             if not content:
                 try:
                     content = downloader()
@@ -326,7 +328,8 @@ class OutsideFile:
         if not content:
             logger.error(f"Cant download image {self.file_url} force_type = {force_type}")
             return None
-
+        else:
+            logger.info(f"Successful download image {self.file_url}")
         self.file_bytes = content
 
         hash_obj = xxhash.xxh64()
@@ -359,16 +362,22 @@ class OutsideFile:
 
         return result.content
 
-    def _selenium_download(self, url=None):
-        self.driver.delete_all_cookies()
-        self.driver.get(self.file_url)
-        self.driver.get(self.file_url)
-        cookies = self.driver.get_cookies()
-        local_session = Session()
+    def _proxy_duckduckgo(self, url=None):
+        # Imgur is suck
+        # God bless this duck crazy guys!
+        time.sleep(10)  # Pls not ddos frendlyDuck @_ @
+        try:
+            if url:
+                result = self.session.get(f"https://proxy.duckduckgo.com/iu/?u={url}", timeout=3, allow_redirects=True)
+            else:
+                result = self.session.get(f"https://proxy.duckduckgo.com/iu/?u={self.file_url}", timeout=3,
+                                          allow_redirects=True)
+        except Exception as e:
+            logger.error(e)
+            return None
 
-        response = self.driver.request('GET', self.file_url)
-
-        return None
+        self.headers = result.headers
+        return result.content
 
     def check_download(self):
         pass

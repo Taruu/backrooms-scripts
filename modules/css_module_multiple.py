@@ -18,7 +18,6 @@ def handle(article: Article) -> Article:
 
     logger.error(f"TO MANY module css {len(module_only_css)} on page {article.page_name}")
     list_css_modules = get_module_css(article.source_code)
-    print(list_css_modules)
 
     if len(list_css_modules) <= 1:
         return article

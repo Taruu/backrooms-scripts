@@ -26,7 +26,7 @@ def handle(article: Article) -> Article:
     module_css = modules_css[0]
     patched_module_css = module_css
 
-    list_all_local_files_import = [link for link in re.findall(css_url_regex, module_css) if "local--files" in link]
+    list_all_local_files_import = [link for link in re.findall(css_url_regex, module_css) if "local--files" not in link]
 
     for link_str in list_all_local_files_import:
         file_obj = OutsideFile(link_str)

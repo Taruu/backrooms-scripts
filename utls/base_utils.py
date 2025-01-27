@@ -5,6 +5,13 @@ import time
 from asyncio import timeout
 from urllib.parse import urlparse, unquote
 import xxhash
+from requests import Session
+
+from seleniumrequests import Firefox
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
 
 import os
 import magic
@@ -62,6 +69,8 @@ proxy_session.headers.update({"User-Agent": config.values.get("requests.user_age
 
 # Session with auth for target site
 authorized_session = requests.Session()
+
+driver_session = Firefox()
 
 if os.path.exists(config.values.get("requests.session_file")):
     with open(config.values.get("requests.session_file"), "r") as file_session:
@@ -279,9 +288,9 @@ class Article:
 
 
 class OutsideFile:
-    def __init__(self, file_url: str, session=normal_session, proxy_session=proxy_session):
+    def __init__(self, file_url: str, session=normal_session, proxy_session=proxy_session, driver=driver_session):
         self.file_url = file_url
-
+        self.driver = driver
         self.filename: str = None
         self.file_bytes: bytes = None
         self.file_hash: str = None
@@ -300,16 +309,17 @@ class OutsideFile:
         result = requests.get(url, stream=True, verify=True)
         if 200 <= result.status_code < 400:
             return True
+        logger.error(f"Image {url} have {result.status_code} code")
         return False
 
     def download(self, force_type: str = None):
         content = None
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download]:
-            time.sleep(0.1)
             if not content:
                 try:
                     content = downloader()
-                except Exception:
+                except Exception as e:
+                    logger.error(e)
                     content = None
 
             if content:
@@ -319,6 +329,7 @@ class OutsideFile:
 
                 if content:
                     break
+            time.sleep(5)
 
         if not content:
             logger.error(f"Cant download image {self.file_url} force_type = {force_type}")
@@ -340,7 +351,8 @@ class OutsideFile:
                 result = self.session.get(url, timeout=3, allow_redirects=True)
             else:
                 result = self.session.get(self.file_url, timeout=3, allow_redirects=True)
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             return None
 
         self.headers = result.headers
@@ -354,6 +366,17 @@ class OutsideFile:
         self.headers = result.headers
 
         return result.content
+
+    def _selenium_download(self, url=None):
+        self.driver.delete_all_cookies()
+        self.driver.get(self.file_url)
+        self.driver.get(self.file_url)
+        cookies = self.driver.get_cookies()
+        local_session = Session()
+
+        response = self.driver.request('GET', self.file_url)
+
+        return None
 
     def check_download(self):
         pass

@@ -7,12 +7,6 @@ from urllib.parse import urlparse, unquote
 import xxhash
 from requests import Session
 
-from seleniumrequests import Firefox
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.action_chains import ActionChains
-
 import os
 import magic
 import requests
@@ -69,8 +63,6 @@ proxy_session.headers.update({"User-Agent": config.values.get("requests.user_age
 
 # Session with auth for target site
 authorized_session = requests.Session()
-
-driver_session = Firefox()
 
 if os.path.exists(config.values.get("requests.session_file")):
     with open(config.values.get("requests.session_file"), "r") as file_session:
@@ -288,9 +280,9 @@ class Article:
 
 
 class OutsideFile:
-    def __init__(self, file_url: str, session=normal_session, proxy_session=proxy_session, driver=driver_session):
+    def __init__(self, file_url: str, session=normal_session, proxy_session=proxy_session):
         self.file_url = file_url
-        self.driver = driver
+
         self.filename: str = None
         self.file_bytes: bytes = None
         self.file_hash: str = None

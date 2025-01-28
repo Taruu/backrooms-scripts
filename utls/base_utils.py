@@ -95,6 +95,8 @@ class ArticleFile:
         if "/" in page_name:
             raise Exception("page_name cant has '/' symbol")
 
+        if len(filename) > 240:
+            mime_type()
         self.filename: str = filename
 
         self._file_bytes: bytes = file_bytes
@@ -151,10 +153,10 @@ class ArticleFile:
         result = self.session.post(f"{config.API_ARTICLES}{self.page_name}/files", data=self._file_bytes,
                                    headers=headers)
 
-        if result.status_code not in [200, 409]:
+        if result.status_code not in [200, 409, 502]:
             text = f"Fail to upload image: {self.page_name}/{self.filename}"
             config.logger.error(text)
-            raise Exception(text)
+            raise Exception(result.content)
         else:
             self.is_file_new = False
             self.file_id = None

@@ -303,14 +303,14 @@ class OutsideFile:
         result = requests.get(url, stream=True, verify=True)
         if 200 <= result.status_code < 400:
             return True
-        logger.error(f"Image {url} have {result.status_code} code")
+        logger.error(f"File {url} have {result.status_code} code")
         return False
 
     def download(self, force_type: str = None):
         content = None
         for downloader in [self._direct_download, self._proxy_download, self._webarchive_download,
                            self._proxy_duckduckgo]:
-            logger.info(f"Try {downloader.__name__} for image {self.file_url}")
+            logger.info(f"Try {downloader.__name__} for {self.mime_type} force_type={force_type} {self.file_url}")
             if not content:
                 try:
                     content = downloader()
@@ -328,10 +328,10 @@ class OutsideFile:
             time.sleep(5)
 
         if not content:
-            logger.error(f"Cant download image {self.file_url} force_type = {force_type}")
+            logger.error(f"Cant download {self.mime_type} {self.file_url} force_type = {force_type}")
             return None
         else:
-            logger.info(f"Successful download image {self.file_url}")
+            logger.info(f"Successful download {self.mime_type} {self.file_url}")
         self.file_bytes = content
 
         hash_obj = xxhash.xxh64()

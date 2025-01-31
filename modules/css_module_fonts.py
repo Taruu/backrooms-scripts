@@ -83,7 +83,7 @@ def handle(article: Article) -> Article:
     for link_str in list_all_url:
 
         file_obj = OutsideFile(link_str)
-        file_obj.download()
+        file_obj.download(force_type="text")
 
         if not file_obj.file_bytes or not file_obj.mime_type:
             continue
@@ -99,6 +99,10 @@ def handle(article: Article) -> Article:
         font_css = css_file.file_bytes.decode()
 
         list_all_font_url = [OutsideFile(link) for link in re.findall(css_url_regex, font_css)]
+
+        if not list_all_font_url:
+            logger.warning(f"This not CSS font not url links {link_str}")
+            continue
 
         link_obj = urlparse(link_str)
 

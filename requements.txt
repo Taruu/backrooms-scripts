@@ -6,7 +6,9 @@ loguru==0.7.3
 lxml==5.3.0
 PySocks==1.7.1
 python-magic==0.4.27
+regex==2024.11.6
 requests==2.32.3
 urllib3==2.2.3
+wasmer==1.1.0
 wayback==0.4.5
 xxhash==3.5.0

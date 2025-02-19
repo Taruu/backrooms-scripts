@@ -242,6 +242,13 @@ class Article:
         data_post = {"pageId": page_name, "title": title, "source": source, "comment": comment}
         response = session.post(f"{config.API_ARTICLES}new", data=data_post)
 
+    @property
+    def tags(self) -> list[str]:
+        return self._page_source.get("tags")
+
+    @tags.setter
+    def tags(self, new_tags):
+        self._page_source.update({"tags": new_tags})
 
     @property
     def source_code(self) -> str:
@@ -412,7 +419,5 @@ class OutsideFile:
 
 
 if __name__ == "__main__":
-    test = OutsideFile("http://backrooms-wiki.wikidot.com/local--files/component:theme/sidebar.css")
-
-    print(test.download())
-    print(test.mime_type)
+    level_22 = Article("level-22")
+    print(level_22._page_source)

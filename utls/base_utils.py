@@ -236,6 +236,13 @@ class Article:
 
         self._get_file_list()
 
+    @staticmethod
+    def create(page_name: str, title: str, source: str, comment: str, session=authorized_session):
+        # https://www.backroomswiki.ru/api/articles/new
+        data_post = {"pageId": page_name, "title": title, "source": source, "comment": comment}
+        response = session.post(f"{config.API_ARTICLES}new", data=data_post)
+
+
     @property
     def source_code(self) -> str:
         return self._page_source.get("source")

@@ -2,7 +2,6 @@ import json
 import logging
 import mimetypes
 import time
-from asyncio import timeout
 from urllib.parse import urlparse, unquote
 import xxhash
 from requests import Session
@@ -238,9 +237,14 @@ class Article:
 
     @staticmethod
     def create(page_name: str, title: str, source: str, comment: str, session=authorized_session):
-        # https://www.backroomswiki.ru/api/articles/new
         data_post = {"pageId": page_name, "title": title, "source": source, "comment": comment}
-        response = session.post(f"{config.API_ARTICLES}new", data=data_post)
+        response = session.post(f"{config.API_ARTICLES}new", json=data_post)
+        result = response.json()
+
+        if result.get("status") != "ok":
+            raise Exception(f'Error create page: {result.get("status")}')
+
+        return Article(page_name)
 
     @property
     def tags(self) -> list[str]:
@@ -419,5 +423,4 @@ class OutsideFile:
 
 
 if __name__ == "__main__":
-    level_22 = Article("level-22")
-    print(level_22._page_source)
+    Article.create("sandbox:foxbot-test-create", "API test create", "Test auto create", "Test create")

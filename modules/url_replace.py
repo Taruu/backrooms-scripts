@@ -1,11 +1,25 @@
 """
 Fix url links
+
+Fix all links in way:
+
+From:
+[http://localsitename.com/main Main page]
+[[[http://localsitename.com/fox| Fox page]]]
+
+To:
+[[[main|Main page]]]
+[[[fox| Fox page]]]
+
+Not handle already "local" links:
+[main Main page]
+[fox Fox page]
 """
 import re
 from urllib.parse import urlparse
 
 from config import site, BASE_URL
-from typing import List
+from typing import List, Tuple
 
 from utls.base_utils import Article
 from utls.regex_parser import s_bracket_dual_regex, s_bracket_triple_regex, s_bracket_one_regex
@@ -14,7 +28,7 @@ replace_blacklist_in = site.get("replace.in")
 base_url_obj = urlparse(BASE_URL)
 
 
-def link_handle(source_link: str):
+def link_tuple_handle(source_link: str) -> Tuple[bool, str, str]:
     link_text = source_link.strip('[]')
 
     if "|" in link_text:
@@ -53,6 +67,12 @@ def link_handle(source_link: str):
         new_url = f"{patch_link.geturl()}{url_obj.path}"
     else:
         new_url = f"{url_obj.path}"
+
+    return open_page, new_url, text
+
+
+def link_handle(source_link: str):
+    open_page, new_url, text = link_tuple_handle(source_link)
     if text:
         return f"[[[{'*' * int(open_page)}{new_url}|{text}]]]"
     return f"[[[{'*' * int(open_page)}{new_url}|{text}]]]"

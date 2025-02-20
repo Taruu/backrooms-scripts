@@ -228,8 +228,8 @@ class Article:
         self.page_name = page_name
 
         self._file_list = {}
-        self._page_source = self.session.get(f'{config.API_ARTICLES}{self.page_name}').json()
-
+        result = self.session.get(f'{config.API_ARTICLES}{self.page_name}')
+        self._page_source = result.json()
         if self._page_source.get("error"):
             raise Exception(self._page_source.get("error"))
 
@@ -275,7 +275,8 @@ class Article:
         return result_json.get("pageId") == self.page_name
 
     def _get_file_list(self):
-        file_json = requests.get(f"{config.API_ARTICLES}{self.page_name}/files").json()
+        result = requests.get(f"{config.API_ARTICLES}{self.page_name}/files")
+        file_json = result.json()
         for file_info in file_json.get("files"):
             article_file = ArticleFile(self.page_name, file_info.get("name"),
                                        mime_type=file_info.get("mimeType"), file_id=file_info.get("id"))

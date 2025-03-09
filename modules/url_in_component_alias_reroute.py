@@ -17,6 +17,7 @@ import time
 import uuid
 from math import atan2
 from urllib.parse import urlparse
+from venv import logger
 
 from config import site, BASE_URL
 from typing import List
@@ -47,10 +48,15 @@ def handle(article: Article) -> Article:
     for solo_item in solo_brackets_items:
         pass
 
-
     dual_brackets_items = re.findall(s_bracket_dual_regex, patched_source_page)
 
     for dual_item in dual_brackets_items:
-        print(dual_item)
+        link_in_dual = False
+        for uuid_link in triple_brackets_links.keys():
+            if uuid_link in dual_item:
+                link_in_dual = True
+        if link_in_dual:
+            logger.error(f"Has link in dual component")
+            print(dual_item)
 
     return article

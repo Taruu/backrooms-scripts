@@ -30,7 +30,7 @@ def command_cli(args):
     modules = [importlib.import_module(module_name) for module_name in args.patch_names]
 
     for link in file.readlines():
-        time.sleep(0.1)
+
         if not link:
             continue
 

@@ -90,7 +90,8 @@ def handle(article: Article) -> Article:
 
         if "text" not in file_obj.mime_type:
             continue
-        print(f"test {file_obj.file_url}", is_css_font_file(file_obj.file_bytes.decode()))
+        #print(f"test {file_obj.file_url}", is_css_font_file(file_obj.file_bytes.decode()))
+
         if not is_css_font_file(file_obj.file_bytes.decode()):
             logger.warning(f"File on url {link_str} is not font-css only")
             continue
@@ -105,8 +106,8 @@ def handle(article: Article) -> Article:
             continue
 
         link_obj = urlparse(link_str)
-
-        css_filename = f"{str(link_obj.path)[1:]}?{link_obj.query}.css".replace('?', '_')
+        #TODO FTW is filenameis???
+        css_filename = f"{str(link_obj.path)[1:]}?{link_obj.query}.css".replace('?', '_').replace("/", "_")
 
         for font_file_remote in list_all_font_url:
 
@@ -114,6 +115,7 @@ def handle(article: Article) -> Article:
             font_file_local = ArticleFile(font_page_data_a.page_name,
                                           f"{css_filename.replace('.css', '')}_{font_file_remote.file_hash}",
                                           file_bytes=font_file_remote.file_bytes)
+
             if font_file_local.filename not in font_page_data_values:
                 font_page_data_a.add_file(font_file_local)
                 font_page_data_values.append(font_file_local.filename)
@@ -122,6 +124,7 @@ def handle(article: Article) -> Article:
 
         css_file_local = ArticleFile(font_page_css_a.page_name, css_filename, file_bytes=font_css.encode(),
                                      mime_type="text/css")
+
         if css_file_local.filename not in font_page_css_values:
             font_page_data_a.add_file(css_file_local)
             font_page_css_values.append(css_file_local.filename)
